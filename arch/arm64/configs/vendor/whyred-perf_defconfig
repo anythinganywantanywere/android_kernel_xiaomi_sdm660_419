@@ -859,3 +859,4 @@ CONFIG_KALLSYMS=y
 CONFIG_SECURITY_SELINUX=y
 # NT synchronization primitive emulation (Proton/Wine)
 CONFIG_NTSYNC=y
+CONFIG_RW_SWAPPINESS=y
