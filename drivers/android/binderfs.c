@@ -605,14 +605,6 @@ out:
 	return dentry;
 }
 
-static struct binder_features {
-	bool oneway_spam_detection;
-	bool freeze_notification;
-} binder_features = {
-	.oneway_spam_detection = true,
-	.freeze_notification = true,
-};
-
 static int binder_features_show(struct seq_file *m, void *unused)
 {
 	bool *feature = m->private;
