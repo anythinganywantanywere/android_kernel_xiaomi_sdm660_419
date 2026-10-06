@@ -34,7 +34,14 @@ Cl:
 - venus: Resolve committed merge-conflict markers in hfi_venus.c
 - lib: test_overflow: Resolve committed merge-conflict markers
 - arch: arm64: configs: Enable NTSYNC, RW_SWAPPINESS, LZO (F2FS LZO/LZO-RLE)
+- block: Import SSG (Samsung Generic) I/O scheduler (G998USQU5CVDB + S908BXXU2AVF1, backported to 4.19)
+- block: Add blkcg shallow-depth control for SSG (ssg.max_available_ratio)
+- block: Make SSG the default blk-mq I/O scheduler (MQ_SSG_DEFAULT)
+- arch: arm64: configs: Enable SSG + SSG cgroup, set zram default compressor to lz4
+- soc: qcom: Stop MSM_PM from force-selecting MSM_IDLE_STATS
 
-Sumber: ~/kernel_sm8250 (F3) + ~/android_kernel_samsung_sm8250 (LineageOS)
-Branch: port/tier-abc + port/ss-picks (di atas `back` @ 1bd40e9cae24)
+Sumber: ~/kernel_sm8250 (F3) + ~/android_kernel_samsung_sm8250 (LineageOS) + ~/anya_xiaomi_sm6115 (sm6115/bengal)
+Branch: port/tier-abc + port/ss-picks (di atas `back` @ 1bd40e9cae24); SSG/zram di `sienna`
 Catatan: seri genirq/cpuhotplug (6 commit) sudah di-revert — efeknya nol, tidak didaftar.
+Catatan (SSG): CONFIG_DEBUG_FS/BLK_DEBUG_FS dicoba lalu di-revert (bootloop di whyred);
+detail lengkap di CHANGELOG-port-ssg.md.
