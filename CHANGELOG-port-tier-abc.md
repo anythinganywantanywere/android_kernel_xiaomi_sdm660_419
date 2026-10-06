@@ -66,13 +66,13 @@ Total: **27 commit** di atas checkpoint.
 - `3349cb34d5ac` — tick/nohz: remove redundant IRQ save/restore (`3e81a392a864`)
 - `7aa0d2c77737` — fs-writeback: power-efficient workqueue untuk dirty-time (`eedcc6b1609c`)
 
-### Subsystem: genirq / CPU hotplug (series 6 commit)
-- `af1560323f7a` — skip suspended interrupts when restoring affinity (`0c7759961733`)
-- `f07102ced0ef` — notify about affinity changes breaking the affinity mask (`a83e512f099b`)
-- `6a441485ce46` — retry with `cpu_online_mask` when migration fails (`6104377d7ca3`)
-- `012c28c5ecc4` — retain disable depth for managed interrupts across CPU hotplug (`6c0e3798077d`)
-- `b1ab026e9623` — rebalance managed interrupts across multi-CPU hotplug (`ead6a316176e`)
-- `f0d11fe503f1` — restore affinity even for suspended IRQ (`5b2465203672`)
+### Subsystem: genirq / CPU hotplug — REVERTED (lihat bawah)
+Seri 6 commit (`af1560323f7a`, `f07102ced0ef`, `6a441485ce46`, `012c28c5ecc4`,
+`b1ab026e9623`, `f0d11fe503f1`) **di-revert** di commit `8d645be0983b`.
+Alasan: verifikasi on-device memunculkan `WARNING at irq_startup+0x174`
+(dari `enable_irq` saat BT UART power-on) — `irq_startup` ada di
+`kernel/irq/chip.c` yang diubah seri ini, dan seri ini backport 5.x
+(`788019eb559f`) yang base-nya beda. `kernel/irq/` sekarang identik `back`.
 
 ### Subsystem: mm / fs / misc
 - `f2ece406914d` — mm: mmap: fix fput in error path v2 (`5e089e08283a`)
