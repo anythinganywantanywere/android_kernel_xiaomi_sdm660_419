@@ -1,0 +1,43 @@
+diff a/drivers/android/binder.c b/drivers/android/binder.c	(rejected hunks)
+@@ -82,6 +82,7 @@
+ #include "binder_alloc.h"
+ #include "binder_internal.h"
+ #include "binder_trace.h"
++#include "dbitmap.h"
+ 
+ static HLIST_HEAD(binder_deferred_list);
+ static DEFINE_MUTEX(binder_deferred_lock);
+@@ -487,6 +488,8 @@ struct binder_priority {
+  * @freeze_wait:          waitqueue of processes waiting for all outstanding
+  *                        transactions to be processed
+  *                        (protected by @inner_lock)
++ * @dmap                  dbitmap to manage available reference descriptors
++ *                        (protected by @outer_lock)
+  * @todo:                 list of work for this process
+  *                        (protected by @inner_lock)
+  * @stats:                per-process binder statistics
+@@ -538,7 +541,7 @@ struct binder_proc {
+ 	bool sync_recv;
+ 	bool async_recv;
+ 	wait_queue_head_t freeze_wait;
+-
++	struct dbitmap dmap;
+ 	struct list_head todo;
+ 	struct binder_stats stats;
+ 	struct list_head delivered_death;
+@@ -4749,6 +4835,7 @@ static void binder_free_proc(struct binder_proc *proc)
+ 	put_task_struct(proc->tsk);
+ 	put_cred(proc->cred);
+ 	binder_stats_deleted(BINDER_STAT_PROC);
++	dbitmap_free(&proc->dmap);
+ 	kfree(proc);
+ }
+ 
+@@ -5454,6 +5541,7 @@ static int binder_open(struct inode *nodp, struct file *filp)
+ 	proc = kzalloc(sizeof(*proc), GFP_KERNEL);
+ 	if (proc == NULL)
+ 		return -ENOMEM;
++	dbitmap_init(&proc->dmap);
+ 	spin_lock_init(&proc->inner_lock);
+ 	spin_lock_init(&proc->outer_lock);
+ 	get_task_struct(current->group_leader);

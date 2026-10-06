@@ -13,6 +13,7 @@
 #include <linux/types.h>
 #include <linux/uidgid.h>
 #include <uapi/linux/android/binderfs.h>
+#include "dbitmap.h"
 #include "binder_alloc.h"
 
 struct binder_context {
@@ -482,7 +483,7 @@ struct binder_proc {
 	bool sync_recv;
 	bool async_recv;
 	wait_queue_head_t freeze_wait;
-
+	struct dbitmap dmap;
 	struct list_head todo;
 #ifdef CONFIG_ANDROID_BINDER_LOGS
 	struct binder_stats stats;
