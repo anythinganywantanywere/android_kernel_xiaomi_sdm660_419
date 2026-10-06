@@ -163,23 +163,7 @@ static bool migrate_one_irq(struct irq_desc *desc)
 	 * mask and therefore might keep/reassign the irq to the outgoing
 	 * CPU.
 	 */
-	err = irq_do_set_affinity(d, affinity, false);
-
-	/*
-	 * If there are online CPUs in the affinity mask, but they have no
-	 * vectors left to make the migration work, try to break the
-	 * affinity by migrating to any online CPU.
-	 */
-	if (err == -ENOSPC && !irqd_affinity_is_managed(d) && affinity != cpu_online_mask) {
-		pr_debug("IRQ%u: set affinity failed for %*pbl, re-try with online CPUs\n",
-			 d->irq, cpumask_pr_args(affinity));
-
-		affinity = cpu_online_mask;
-		brokeaff = true;
-
-		err = irq_do_set_affinity(d, affinity, false);
-	}
-
+	err = irq_set_affinity_locked(d, affinity, false);
 	if (err) {
 		pr_warn_ratelimited("IRQ%u: set affinity failed(%d).\n",
 				    d->irq, err);
@@ -211,11 +195,8 @@ void irq_migrate_all_off_this_cpu(void)
 		bool affinity_broken;
 
 		desc = irq_to_desc(irq);
-
 		raw_spin_lock(&desc->lock);
 		affinity_broken = migrate_one_irq(desc);
-		if (affinity_broken && desc->affinity_notify)
-			irq_affinity_schedule_notify_work(desc);
 		raw_spin_unlock(&desc->lock);
 
 		if (affinity_broken) {
@@ -239,8 +220,10 @@ static void irq_restore_affinity_of_irq(struct irq_desc *desc, unsigned int cpu)
 	    !irq_data_get_irq_chip(data) || !cpumask_test_cpu(cpu, affinity))
 		return;
 
-	if (irqd_is_managed_and_shutdown(data))
-		irq_startup_managed(desc);
+	if (irqd_is_managed_and_shutdown(data)) {
+		irq_startup(desc, IRQ_RESEND, IRQ_START_COND);
+		return;
+	}
 
 	/*
 	 * If the interrupt can only be directed to a single target

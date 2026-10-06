@@ -330,21 +330,6 @@ static bool irq_set_affinity_deactivated(struct irq_data *data,
 	return true;
 }
 
-/**
- * irq_affinity_schedule_notify_work - Schedule work to notify about affinity change
- * @desc:  Interrupt descriptor whose affinity changed
- */
-void irq_affinity_schedule_notify_work(struct irq_desc *desc)
-{
-	lockdep_assert_held(&desc->lock);
-
-	kref_get(&desc->affinity_notify->kref);
-	if (!schedule_work(&desc->affinity_notify->work)) {
-		/* Work was already scheduled, drop our extra ref */
-		kref_put(&desc->affinity_notify->kref, desc->affinity_notify->release);
-	}
-}
-
 int irq_set_affinity_locked(struct irq_data *data, const struct cpumask *mask,
 			    bool force)
 {
@@ -365,9 +350,14 @@ int irq_set_affinity_locked(struct irq_data *data, const struct cpumask *mask,
 		irq_copy_pending(desc, mask);
 	}
 
-	if (desc->affinity_notify)
-		irq_affinity_schedule_notify_work(desc);
-
+	if (desc->affinity_notify) {
+		kref_get(&desc->affinity_notify->kref);
+		if (!schedule_work(&desc->affinity_notify->work)) {
+			/* Work was already scheduled, drop our extra ref */
+			kref_put(&desc->affinity_notify->kref,
+				 desc->affinity_notify->release);
+		}
+	}
 	irqd_set(data, IRQD_AFFINITY_SET);
 
 	return ret;
@@ -675,14 +665,10 @@ void __enable_irq(struct irq_desc *desc)
 		irq_settings_set_noprobe(desc);
 		/*
 		 * Call irq_startup() not irq_enable() here because the
-		 * interrupt might be marked NOAUTOEN so irq_startup()
-		 * needs to be invoked when it gets enabled the first time.
-		 * This is also required when __enable_irq() is invoked for
-		 * a managed and shutdown interrupt from the S3 resume
-		 * path.
-		 *
-		 * If it was already started up, then irq_startup() will
-		 * invoke irq_enable() under the hood.
+		 * interrupt might be marked NOAUTOEN. So irq_startup()
+		 * needs to be invoked when it gets enabled the first
+		 * time. If it was already started up, then irq_startup()
+		 * will invoke irq_enable() under the hood.
 		 */
 		irq_startup(desc, IRQ_RESEND, IRQ_START_FORCE);
 		break;
