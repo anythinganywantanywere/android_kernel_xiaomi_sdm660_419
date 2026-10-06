@@ -3070,9 +3070,6 @@ static int binder_proc_transaction(struct binder_transaction *t,
 		binder_stats_deleted(BINDER_STAT_TRANSACTION);
 	}
 
-	if (oneway && frozen)
-		return BR_TRANSACTION_PENDING_FROZEN;
-
 	return 0;
 }
 
@@ -3857,17 +3854,9 @@ static void binder_transaction(struct binder_proc *proc,
 	} else {
 		BUG_ON(target_node == NULL);
 		BUG_ON(t->buffer->async_transaction != 1);
-		return_error = binder_proc_transaction(t, target_proc, NULL);
-		/*
-		 * Let the caller know when async transaction reaches a frozen
-		 * process and is put in a pending queue, waiting for the target
-		 * process to be unfrozen.
-		 */
-		if (return_error == BR_TRANSACTION_PENDING_FROZEN)
-			tcomplete->type = BINDER_WORK_TRANSACTION_PENDING;
 		binder_enqueue_thread_work(thread, tcomplete);
-		if (return_error &&
-		    return_error != BR_TRANSACTION_PENDING_FROZEN)
+		return_error = binder_proc_transaction(t, target_proc, NULL);
+		if (return_error)
 			goto err_dead_proc_or_thread;
 	}
 	if (target_thread)
@@ -4892,10 +4881,8 @@ retry:
 		case BINDER_WORK_TRANSACTION_PENDING:
 		case BINDER_WORK_TRANSACTION_ONEWAY_SPAM_SUSPECT: {
 			if (proc->oneway_spam_detection_enabled &&
-				   w->type == BINDER_WORK_TRANSACTION_ONEWAY_SPAM_SUSPECT)
+			   w->type == BINDER_WORK_TRANSACTION_ONEWAY_SPAM_SUSPECT)
 				cmd = BR_ONEWAY_SPAM_SUSPECT;
-			else if (w->type == BINDER_WORK_TRANSACTION_PENDING)
-				cmd = BR_TRANSACTION_PENDING_FROZEN;
 			else
 				cmd = BR_TRANSACTION_COMPLETE;
 			binder_inner_proc_unlock(proc);
