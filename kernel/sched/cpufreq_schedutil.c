@@ -1067,4 +1067,44 @@ struct cpufreq_governor *cpufreq_default_governor(void)
 }
 #endif
 
+/*************** Exported helpers for external cpufreq governors ***************/
+
+/*
+ * Reflex CPUFreq governor helpers (4.19 port).
+ * Mirrors the v0.2.2 backport's exported wrappers, but exposes the same
+ * surface v0.4.0 expects (raw util + bw_min/bw_max; no headroom here, the
+ * governor applies map_util_freq() itself).
+ */
+unsigned long cpufreq_get_capacity_ref_freq(struct cpufreq_policy *policy)
+{
+	return policy->cpuinfo.max_freq;
+}
+EXPORT_SYMBOL_GPL(cpufreq_get_capacity_ref_freq);
+
+void cpufreq_get_effective_util(int cpu, unsigned long boost,
+				unsigned long *out_util,
+				unsigned long *out_bw_min,
+				unsigned long *out_bw_max)
+{
+	struct rq *rq = cpu_rq(cpu);
+	unsigned long max = arch_scale_cpu_capacity(NULL, cpu);
+	unsigned long util;
+
+	util = schedutil_cpu_util(cpu, cpu_util_cfs(rq), max,
+				  FREQUENCY_UTIL, NULL);
+	if (boost > util)
+		util = boost;
+
+	*out_util = util;
+	*out_bw_min = cpu_bw_dl(rq);
+	*out_bw_max = max;
+}
+EXPORT_SYMBOL_GPL(cpufreq_get_effective_util);
+
+bool cpufreq_cpu_dl_bw_exceeded(int cpu, unsigned long bw_min)
+{
+	return cpu_bw_dl(cpu_rq(cpu)) > bw_min;
+}
+EXPORT_SYMBOL_GPL(cpufreq_cpu_dl_bw_exceeded);
+
 cpufreq_governor_init(schedutil_gov);

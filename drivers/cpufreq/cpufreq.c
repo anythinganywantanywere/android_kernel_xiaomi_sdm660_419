@@ -2661,3 +2661,14 @@ static int __init cpufreq_core_init(void)
 }
 module_param(off, int, 0444);
 core_initcall(cpufreq_core_init);
+
+/*
+ * Reflex (4.19 port): 4.19 has no cpufreq_driver_test_flags(). The only flag
+ * schedutil-era governors test is CPUFREQ_NEED_UPDATE_LIMITS, which 4.19 never
+ * sets, so this reports "not set".
+ */
+bool cpufreq_driver_test_flags(unsigned int flags);
+bool cpufreq_driver_test_flags(unsigned int flags)
+{
+	return false;
+}

@@ -287,6 +287,24 @@ config SCHEDHORIZON_DEFAULT_UP_DELAY_HP
 	  by the number of nanosecond in one milisecond (NSEC_PER_MSEC).
 endif
 
+config CPU_FREQ_GOV_REFLEX
+	bool "'reflex' cpufreq policy governor"
+	default n
+	depends on CPU_FREQ && SMP
+	select CPU_FREQ_GOV_ATTR_SET
+	select IRQ_WORK
+	help
+	  Reflex is schedutil plus a measured fast path for rising load.
+	  Each CPU measures, from its idle time and frequency scale, the
+	  demand it actually ran; an interval without any idle means the CPU
+	  is falling behind, and the governor then runs it at the speed that
+	  best trades latency against energy instead of waiting for PELT to
+	  ramp up.  Otherwise it keeps up with demand like schedutil.
+
+	  4.19 port: built-in (not a module).  The speeds come from the
+	  Energy Model when one is registered, else from a cube-law model.
+	  Module: cpufreq_reflex.  If in doubt, say N.
+
 comment "CPU frequency scaling drivers"
 
 config CPUFREQ_DT
