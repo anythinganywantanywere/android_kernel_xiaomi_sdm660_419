@@ -8,10 +8,17 @@
 
 static int version_proc_show(struct seq_file *m, void *v)
 {
+#ifdef CONFIG_KERNEL_VERSION_SPOOF
+	seq_printf(m, linux_proc_banner,
+		utsname()->sysname,
+		CONFIG_KERNEL_SPOOF_RELEASE,
+		utsname()->version);
+#else
 	seq_printf(m, linux_proc_banner,
 		utsname()->sysname,
 		utsname()->release,
 		utsname()->version);
+#endif
 	return 0;
 }
 

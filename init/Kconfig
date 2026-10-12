@@ -174,6 +174,33 @@ config UNAME_OVERRIDE_STRING
 
 endif
 
+menuconfig KERNEL_VERSION_SPOOF
+	bool "Report a fake kernel release to userspace (version spoof)"
+	default n
+	help
+	  Fakes the kernel release string returned to userspace via
+	  uname(2) and /proc/version, without touching the real build
+	  version. Daemons such as netd / bpfloader and any non-root
+	  process observe the spoofed release, while a plain root shell
+	  still sees the real UTS_RELEASE. Use this for ROM ports that
+	  gate features on the reported kernel major version.
+
+if KERNEL_VERSION_SPOOF
+
+config KERNEL_SPOOF_RELEASE
+	string "Fake kernel release (uname release / /proc/version)"
+	default "5.10.248-SpoofKernel"
+
+config KERNEL_SPOOF_BARE
+	string "Bare fake release shown to the target daemon (root)"
+	default "5.10.248"
+
+config KERNEL_SPOOF_TARGET
+	string "proc comm that must observe the bare fake release"
+	default "netd"
+
+endif
+
 config BUILD_SALT
        string "Build ID Salt"
        default ""
