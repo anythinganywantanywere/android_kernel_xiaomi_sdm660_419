@@ -1281,27 +1281,23 @@ static int override_version(struct new_utsname __user *name)
 #endif
 }
 
+#ifdef CONFIG_KSU_SUSFS_SPOOF_UNAME
+extern struct static_key_false susfs_is_uname_spoof_buffer_set;
+extern void susfs_spoof_uname(struct new_utsname* tmp);
+#endif
 SYSCALL_DEFINE1(newuname, struct new_utsname __user *, name)
 {
 	struct new_utsname tmp;
-#ifdef CONFIG_KERNEL_VERSION_SPOOF
-	uid_t cur_uid = current_uid().val;
+
+	if (!name)
+		return -EFAULT;
 
 	down_read(&uts_sem);
 	memcpy(&tmp, utsname(), sizeof(tmp));
-	/* root daemons that gate on the reported major version */
-	if (cur_uid == 0) {
-		if (unlikely(!strncmp(current->comm, CONFIG_KERNEL_SPOOF_TARGET,
-				      strlen(CONFIG_KERNEL_SPOOF_TARGET)))) {
-			strlcpy(tmp.release, CONFIG_KERNEL_SPOOF_BARE,
-				sizeof(tmp.release));
-		}
-	}
-	/* everything running as an app observes the full fake release */
-	else if (cur_uid >= 1000) {
-		strlcpy(tmp.release, CONFIG_KERNEL_SPOOF_RELEASE,
-			sizeof(tmp.release));
-	}
+#ifdef CONFIG_KSU_SUSFS_SPOOF_UNAME
+	if (static_branch_likely(&susfs_is_uname_spoof_buffer_set))
+		susfs_spoof_uname(&tmp);
+#endif
 	up_read(&uts_sem);
 	if (copy_to_user(name, &tmp, sizeof(tmp)))
 		return -EFAULT;
@@ -1315,27 +1311,6 @@ SYSCALL_DEFINE1(newuname, struct new_utsname __user *, name)
 		return -EFAULT;
 	return 0;
 }
-#else /* !CONFIG_KERNEL_VERSION_SPOOF */
-SYSCALL_DEFINE1(newuname, struct new_utsname __user *, name)
-{
-	struct new_utsname tmp;
-
-	down_read(&uts_sem);
-	memcpy(&tmp, utsname(), sizeof(tmp));
-	up_read(&uts_sem);
-	if (copy_to_user(name, &tmp, sizeof(tmp)))
-		return -EFAULT;
-
-	override_custom_release(name->release, sizeof(name->release));
-	if (override_release(name->release, sizeof(name->release)))
-		return -EFAULT;
-	if (override_architecture(name))
-		return -EFAULT;
-	if (override_version(name))
-		return -EFAULT;
-	return 0;
-}
-#endif /* CONFIG_KERNEL_VERSION_SPOOF */
 
 #ifdef __ARCH_WANT_SYS_OLD_UNAME
 /*
