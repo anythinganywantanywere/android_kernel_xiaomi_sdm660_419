@@ -156,3 +156,5 @@ log.txt
 /out-fase0/
 /out-debug/
 docs/rust-migration/logs/
+
+/out-fase1/

@@ -38,3 +38,24 @@
   paralel vs referensi) masih terbuka; sesi ini memakai
   asumsi paralel. Juga keputusan soal SUSFS off ini
   (biarkan, atau perbaiki di fase berikutnya).
+
+## 2026-11-03 sesi 2
+- Fase: 1 (hardening konfigurasi)
+- Dikerjakan: cek 14 kandidat AGENTS_4; aktifkan 3 opsi aman
+  (HARDENED_USERCOPY, SLAB_FREELIST_RANDOM,
+  SLAB_FREELIST_HARDENED) di
+  `arch/arm64/configs/vendor/whyred-perf_defconfig` (+3 baris);
+  CFI/SCS sengaja tidak diaktifkan (menunggu keputusan);
+  koreksi prosedur savedefconfig (tidak dipakai menggantikan
+  defconfig vendor, karena akan membuang blok KSU_SUSFS dll.);
+  build penuh ke `out-fase1` dengan 2 interupsi yang dicatat
+  (restart runtime, lalu bc/bison/flex hilang dan di-install
+  ulang).
+- Commit/branch: lihat commit Fase 1 di branch ini.
+- Hasil verifikasi: build selesai 05:38 WIB, errors 0,
+  warnings 7 baris, tidak ada warning baru vs baseline;
+  Image.gz-dtb 13.037.193 byte sha256 `5beacb20...`;
+  `.config` akhir memuat ketiga opsi =y, KSU=y, NOMOUNT=y,
+  tanpa KSU_SUSFS (sama seperti baseline).
+- Menunggu manusia: keputusan CFI/SCS, keputusan SUSFS off,
+  dan uji boot manual image Fase 1 (belum ada flash).
