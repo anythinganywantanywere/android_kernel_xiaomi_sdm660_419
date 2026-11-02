@@ -459,7 +459,7 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 KBUILD_CPPFLAGS := -D__KERNEL__
 KBUILD_AFLAGS_KERNEL :=
 KBUILD_CFLAGS_KERNEL :=
-KBUILD_RUSTFLAGS := --edition=2021 \
+KBUILD_RUSTFLAGS := --edition=2024 \
 		    -Cpanic=abort -Cembed-bitcode=n -Clto=n \
 		    -Cforce-unwind-tables=n -Ccodegen-units=1 \
 		    -Csymbol-mangling-version=v0 \
@@ -467,7 +467,7 @@ KBUILD_RUSTFLAGS := --edition=2021 \
 		    -Zfunction-sections=n
 KBUILD_RUSTFLAGS_KERNEL :=
 KBUILD_RUSTFLAGS_MODULE := --cfg MODULE
-KBUILD_HOSTRUSTFLAGS := --edition=2021 -O $(HOSTRUSTFLAGS)
+KBUILD_HOSTRUSTFLAGS := --edition=2024 -O $(HOSTRUSTFLAGS)
 KBUILD_AFLAGS_MODULE  := -DMODULE
 KBUILD_CFLAGS_MODULE  := -DMODULE
 KBUILD_LDFLAGS_MODULE := -T $(srctree)/scripts/module-common.lds

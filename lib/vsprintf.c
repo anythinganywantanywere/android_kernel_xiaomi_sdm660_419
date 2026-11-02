@@ -1903,12 +1903,13 @@ early_param("no_hash_pointers", no_hash_pointers_enable);
  * Note: The default behaviour (unadorned %p) is to hash the address,
  * rendering it useful as a unique identifier.
  */
-static noinline_for_stack
 #ifdef CONFIG_RUST
-/* Used for Rust formatting ('%pA'). Implemented in rust/. */
+/* Used for Rust formatting ('%pA'). Implemented in rust/.
+ * Must be at file scope with external linkage, NOT after the
+ * `static noinline_for_stack` attribute of pointer() below. */
 char *rust_fmt_argument(char *buf, char *end, void *ptr);
 #endif
-
+static noinline_for_stack
 char *pointer(const char *fmt, char *buf, char *end, void *ptr,
 	      struct printf_spec spec)
 {
