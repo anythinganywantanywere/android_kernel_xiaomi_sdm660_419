@@ -56,6 +56,7 @@ $(warning Detected assembler with broken .inst; disassembly will be unreliable)
 endif
 
 KBUILD_CFLAGS	+= -mgeneral-regs-only
+KBUILD_RUSTFLAGS += --target=aarch64-unknown-none-softfloat -Ctarget-feature="-neon"
 KBUILD_CFLAGS	+= $(compat_vdso) $(cc_has_k_constraint)
 KBUILD_CFLAGS	+= -fno-asynchronous-unwind-tables
 KBUILD_CFLAGS	+= $(call cc-disable-warning, psabi)
