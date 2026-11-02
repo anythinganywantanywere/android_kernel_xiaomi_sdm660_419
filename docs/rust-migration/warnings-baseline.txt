@@ -1,0 +1,5 @@
+../drivers/cpufreq/cpufreq_reflex.c: warning: unused function 'rfx_floor_util' [-Wunused-function]
+../include/linux/kernel.h: warning: use of logical '&&' with constant operand [-Wconstant-logical-operand]
+../include/linux/netdevice.h: warning: use of logical '||' with constant operand [-Wconstant-logical-operand]
+../include/linux/pgtable.h: warning: use of logical '||' with constant operand [-Wconstant-logical-operand]
+../include/linux/slab.h: warning: use of logical '&&' with constant operand [-Wconstant-logical-operand]
