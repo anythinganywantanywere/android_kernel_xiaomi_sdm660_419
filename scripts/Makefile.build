@@ -317,7 +317,7 @@ $(obj)/%.o: $(src)/%.c $(recordmcount_source) $(objtool_dep) FORCE
 
 # Single-part modules are special since we need to mark them in $(MODVERDIR)
 
-$(single-used-m): $(obj)/%.o: $(src)/%.c $(recordmcount_source) $(objtool_dep) FORCE
+$(single-used-m-c): $(obj)/%.o: $(src)/%.c $(recordmcount_source) $(objtool_dep) FORCE
 	$(call cmd,force_checksrc)
 	$(call if_changed_rule,cc_o_c)
 	@{ echo $(@:.o=.ko); echo $@; \
@@ -363,7 +363,7 @@ $(obj)/%.o: $(src)/%.rs FORCE
 # Single-part modules are special since we need to mark them in $(MODVERDIR),
 # like the C rule above: write the .mod file to $(MODVERDIR), not to the
 # upstream .mod location.
-$(single-used-m): $(obj)/%.o: $(src)/%.rs FORCE
+$(single-used-m-rs): $(obj)/%.o: $(src)/%.rs FORCE
 	+$(call if_changed_rule,rustc_o_rs)
 	@{ echo $(@:.o=.ko); echo $@; \
 	   $(cmd_undef_syms); } > $(MODVERDIR)/$(@F:.o=.mod)
