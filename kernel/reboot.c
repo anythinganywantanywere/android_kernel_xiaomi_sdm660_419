@@ -16,6 +16,9 @@
 #include <linux/syscalls.h>
 #include <linux/syscore_ops.h>
 #include <linux/uaccess.h>
+#ifdef CONFIG_KSU_SUSFS
+#include <linux/susfs.h>
+#endif
 
 /*
  * this indicates whether you can reboot with ctrl-alt-del: the default is yes
@@ -305,6 +308,84 @@ DEFINE_MUTEX(system_transition_mutex);
  *
  * reboot doesn't sync: do that yourself before calling this.
  */
+#ifdef CONFIG_KSU_SUSFS
+/*
+ * The SuSFS v2 userspace tool talks to the kernel through
+ * reboot(0xDEADBEEF, 0xFAFAFAFA, cmd, &info). Those magics are never
+ * valid reboot magics, so a real reboot call cannot reach this code.
+ * Each handler fills info.err itself and copies it back to userspace,
+ * so a handled command returns here and never reaches reboot logic.
+ */
+static int susfs_handle_reboot_cmd(unsigned int cmd, void __user *arg)
+{
+	void __user *info = arg;
+
+	switch (cmd) {
+#ifdef CONFIG_KSU_SUSFS_SUS_PATH
+	case CMD_SUSFS_ADD_SUS_PATH:
+		susfs_add_sus_path(&info);
+		return 0;
+	case CMD_SUSFS_ADD_SUS_PATH_LOOP:
+		susfs_add_sus_path_loop(&info);
+		return 0;
+#endif
+#ifdef CONFIG_KSU_SUSFS_SUS_MOUNT
+	case CMD_SUSFS_HIDE_SUS_MNTS_FOR_NON_SU_PROCS:
+		susfs_set_hide_sus_mnts_for_non_su_procs(&info);
+		return 0;
+#endif
+#ifdef CONFIG_KSU_SUSFS_SUS_KSTAT
+	case CMD_SUSFS_ADD_SUS_KSTAT:
+	case CMD_SUSFS_ADD_SUS_KSTAT_STATICALLY:
+		susfs_add_sus_kstat(&info);
+		return 0;
+	case CMD_SUSFS_UPDATE_SUS_KSTAT:
+		susfs_update_sus_kstat(&info);
+		return 0;
+#endif
+#ifdef CONFIG_KSU_SUSFS_SPOOF_UNAME
+	case CMD_SUSFS_SET_UNAME:
+		susfs_set_uname(&info);
+		return 0;
+#endif
+#ifdef CONFIG_KSU_SUSFS_ENABLE_LOG
+	case CMD_SUSFS_ENABLE_LOG:
+		susfs_enable_log(&info);
+		return 0;
+#endif
+#ifdef CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG
+	case CMD_SUSFS_SET_CMDLINE_OR_BOOTCONFIG:
+		susfs_set_cmdline_or_bootconfig(&info);
+		return 0;
+#endif
+#ifdef CONFIG_KSU_SUSFS_OPEN_REDIRECT
+	case CMD_SUSFS_ADD_OPEN_REDIRECT:
+		susfs_add_open_redirect(&info);
+		return 0;
+#endif
+#ifdef CONFIG_KSU_SUSFS_SUS_MAP
+	case CMD_SUSFS_ADD_SUS_MAP:
+		susfs_add_sus_map(&info);
+		return 0;
+#endif
+	case CMD_SUSFS_ENABLE_AVC_LOG_SPOOFING:
+		susfs_set_avc_log_spoofing(&info);
+		return 0;
+	case CMD_SUSFS_SHOW_ENABLED_FEATURES:
+		susfs_get_enabled_features(&info);
+		return 0;
+	case CMD_SUSFS_SHOW_VARIANT:
+		susfs_show_variant(&info);
+		return 0;
+	case CMD_SUSFS_SHOW_VERSION:
+		susfs_show_version(&info);
+		return 0;
+	default:
+		return -EOPNOTSUPP;
+	}
+}
+#endif
+
 SYSCALL_DEFINE4(reboot, int, magic1, int, magic2, unsigned int, cmd,
 		void __user *, arg)
 {
@@ -315,6 +396,11 @@ SYSCALL_DEFINE4(reboot, int, magic1, int, magic2, unsigned int, cmd,
 	/* We only trust the superuser with rebooting the system. */
 	if (!ns_capable(pid_ns->user_ns, CAP_SYS_BOOT))
 		return -EPERM;
+
+#ifdef CONFIG_KSU_SUSFS
+	if (magic1 == 0xDEADBEEF && magic2 == 0xFAFAFAFA)
+		return susfs_handle_reboot_cmd(cmd, arg);
+#endif
 
 	/* For safety, we require "magic" arguments. */
 	if (magic1 != LINUX_REBOOT_MAGIC1 ||
