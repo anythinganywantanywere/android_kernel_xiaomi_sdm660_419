@@ -65,3 +65,11 @@ Entri baru di atas.
 - Opsi: (A) ganti rust-backport, (B) paralel dari sienna, (C) referensi saja
 - Keputusan: B. Branch rust-migration/fase0-baseline dari sienna, lokal saja, tidak di-push, tidak di-flash oleh agent, rust-backport tidak disentuh
 - Dampak/risiko: dua track hidup berdampingan; keputusan replace vs parallel vs reference-only secara formal masih terbuka, tetapi pekerjaan sudah berjalan di jalur paralel
+
+## D-009: Penutupan tugas AGENTS_4 dengan catatan terbuka
+- Tanggal: 2026-11-03
+- Status: disetujui manusia (perintah "lanjutkan saja sesuai tugas yang saya berikan terlebih dahulu" setelah tes perangkat dinyatakan aman)
+- Konteks: §16 AGENTS_4 mensyaratkan uji manual yang dilaporkan manusia; laporan yang masuk membuktikan boot, identitas kernel, SELinux, KSU/NoMount, dan kernel-info, tetapi tidak merinci reboot 3x dan perangkat keras satu per satu
+- Opsi: (A) tunda penutupan sampai setiap butir §12 dilaporkan rinci, (B) tutup tugas dengan catatan terbuka yang jujur
+- Keputusan: B. Tugas AGENTS_4 dinyatakan selesai dikerjakan dengan catatan: 2 WARNING dmesg perlu perbandingan baseline, dan butir §12 yang tidak dirinci tetap terbuka bila ada regresi. Keputusan CFI/SCS, SUSFS, lokasi userspace, dan push BUKAN bagian dari penutupan ini dan tetap menunggu jawaban manusia
+- Dampak/risiko: penutupan ini tidak boleh dikutip sebagai "semua butir §12 lulus rinci" — kutip device-test-2026-11-03.md apa adanya

@@ -87,3 +87,10 @@
 - Commit/branch: 4749a417 di rust-migration/fase0-baseline
 - Hasil verifikasi: sumber dicek 2026-11-03 dan dikutip di dokumen; koreksi: whyred (SDM636) memakai Adreno 509, bukan 508; tidak ada driver vendor yang dipindahkan ke Rust; tidak ada perubahan tree 4.19 dari dokumen ini
 - Menunggu manusia: keputusan lanjut/tunda/batal untuk riset kernel 6.x (rekomendasi dokumen: tunda untuk Android, lanjut riset Linux non-Android saja)
+
+## 2026-11-03 sesi 7
+- Fase: uji manual perangkat (§12, untuk Fase 1 dan Fase 4)
+- Dikerjakan: tulis device-test-2026-11-03.md dari log manusia (Termux); tidak ada perubahan kode
+- Commit/branch: lihat commit uji perangkat di branch ini
+- Hasil verifikasi: uname/version cocok dengan build patch 16:14 WIB; dmesg tanpa BUG/Oops/panic, 2 WARNING tercatat (place_entity, irq_startup, penyebab vs baseline belum dipastikan); getenforce Enforcing; kernel-info cocok dengan uname, lengkap di bawah su; manusia menyatakan perangkat aman 16:46 WIB
+- Menunggu manusia: perbandingan dmesg baseline untuk 2 WARNING; laporan rinci reboot 3x dan perangkat keras bila ada regresi; keputusan CFI/SCS, SUSFS, lokasi userspace, dan push (di luar penutupan tugas AGENTS_4 ini)
