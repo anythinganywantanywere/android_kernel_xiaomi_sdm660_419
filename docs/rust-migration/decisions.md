@@ -73,3 +73,10 @@ Entri baru di atas.
 - Opsi: (A) tunda penutupan sampai setiap butir §12 dilaporkan rinci, (B) tutup tugas dengan catatan terbuka yang jujur
 - Keputusan: B. Tugas AGENTS_4 dinyatakan selesai dikerjakan dengan catatan: 2 WARNING dmesg perlu perbandingan baseline, dan butir §12 yang tidak dirinci tetap terbuka bila ada regresi. Keputusan CFI/SCS, SUSFS, lokasi userspace, dan push BUKAN bagian dari penutupan ini dan tetap menunggu jawaban manusia
 - Dampak/risiko: penutupan ini tidak boleh dikutip sebagai "semua butir §12 lulus rinci" — kutip device-test-2026-11-03.md apa adanya
+
+## D-010: CFI dan SCS tetap nonaktif (sesuai saran, disetujui pengguna 2026-11-03)
+- Tanggal: 2026-11-03
+- Status: diputuskan pengguna dengan perintah "lakukan sesuai saran mu"
+- Konteks: saran agent sebelumnya adalah CFI_CLANG dan SHADOW_CALL_STACK tetap nonaktif dulu (CFI butuh LTO_CLANG yang saat ini off; keduanya berisiko bootloop pada driver vendor)
+- Keputusan: keduanya tetap NONAKTIF di track AGENTS_4; tidak ada perubahan defconfig dari keputusan ini
+- BUKAN bagian dari keputusan ini: baseline dmesg (abaikan atau bandingkan), SUSFS (biarkan off atau perbaiki), lokasi userspace, dan push — keempat hal itu tidak mendapat rekomendasi tegas dari agent sebelumnya, sehingga tetap TERBUKA dan tidak diasumsikan dari perintah yang sama
