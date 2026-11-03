@@ -263,6 +263,20 @@ static void module_assert_mutex_or_preempt(void)
 #endif
 }
 
+/*
+ * find_module() calls this, but the tree never defined it, so the
+ * build fails as soon as CONFIG_MODULES=y. It stayed hidden because
+ * whyred-perf builds with CONFIG_MODULES=n and never compiles this
+ * file. Restore the upstream 4.19 behaviour: assert module_mutex is
+ * held, instead of relaxing the call site to _or_preempt.
+ */
+static void module_assert_mutex(void)
+{
+#ifdef CONFIG_LOCKDEP
+	lockdep_assert_held(&module_mutex);
+#endif
+}
+
 #ifdef CONFIG_MODULE_SIG
 static bool sig_enforce = IS_ENABLED(CONFIG_MODULE_SIG_FORCE);
 module_param(sig_enforce, bool_enable_only, 0644);

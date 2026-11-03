@@ -153,4 +153,6 @@ config SAMPLE_STATX
 	help
 	  Build example userspace program to use the new extended-stat syscall.
 
+source "samples/rust/Kconfig"
+
 endif # SAMPLES

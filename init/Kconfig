@@ -43,6 +43,21 @@ config CLANG_VERSION
 	int
 	default $(shell,$(srctree)/scripts/clang-version.sh $(CC))
 
+config RUSTC_VERSION
+	int
+	default $(shell,$(srctree)/scripts/rustc-version.sh $(RUSTC))
+	help
+	  It does not depend on `RUST` since that one may need to use the version
+	  in a `depends on`.
+
+config RUST_IS_AVAILABLE
+	def_bool $(success,$(srctree)/scripts/rust_is_available.sh)
+	help
+	  This shows whether a suitable Rust toolchain is available (found).
+
+	  In particular, the Makefile target 'rustavailable' is useful to check
+	  why the Rust toolchain is not being detected.
+
 config AS_IS_GNU
 	def_bool $(success,test "$(as-name)" = GNU)
 
@@ -78,6 +93,27 @@ config TOOLS_SUPPORT_RELR
 config CONSTRUCTORS
 	bool
 	depends on !UML
+
+config RUST
+	bool "Rust support"
+	depends on HAVE_RUST
+	depends on RUST_IS_AVAILABLE
+	depends on !MODVERSIONS
+	depends on !CFI_CLANG
+	depends on !SHADOW_CALL_STACK
+	depends on !LTO_CLANG
+	depends on !DEBUG_INFO_BTF
+	depends on !TRIM_UNUSED_KSYMS
+	depends on !KASAN
+	depends on !FUNCTION_TRACER
+	select CONSTRUCTORS
+	help
+	  Enables Rust support in the kernel.
+
+	  This allows other Rust-related options, like drivers written in Rust,
+	  to be selected.
+
+	  If unsure, say N.
 
 config IRQ_WORK
 	bool

@@ -29,6 +29,26 @@
 extern bool susfs_is_current_ksu_domain(void);
 extern void setup_selinux(const char *domain, struct cred *cred);
 extern struct cred *ksu_cred;
+
+/*
+ * SUSFS compatibility shim for backslashxx KernelSU v3.3.1+36.
+ * The SUSFS-patched KSU driver that this tree was built against provided
+ * susfs_is_current_ksu_domain(); the new driver does not contain that
+ * symbol (or any 'susfs' string). Its equivalent is is_ksu_domain(),
+ * defined in KernelSU/kernel/selinux/selinux.c and declared in
+ * KernelSU/kernel/selinux/selinux.h, which returns true when
+ * current_cred() is in the KSU domain -- the same semantics SUSFS
+ * relies on here. Define the old name here, in fs/susfs.c (built only
+ * with CONFIG_KSU_SUSFS=y), so the other fs/ files that declare it
+ * extern link correctly, without modifying the KernelSU submodule.
+ * setup_selinux() and ksu_cred need no shim: both exist in the new
+ * driver with matching signatures.
+ */
+extern bool is_ksu_domain(void);
+bool susfs_is_current_ksu_domain(void)
+{
+	return is_ksu_domain();
+}
 extern int susfs_get_non_sus_mnt_id_from_mnt(struct mount *orig_mnt);
 extern struct vfsmount *susfs_get_non_sus_vfsmnt_from_vfsmnt(struct vfsmount *vfsmnt);
 
