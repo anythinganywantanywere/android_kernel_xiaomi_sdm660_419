@@ -2021,7 +2021,8 @@ static int msm_eeprom_platform_probe(struct platform_device *pdev)
 #ifdef CONFIG_MACH_LONGCHEER
 		if (eb_info->eeprom_name != NULL) {
 			s_vendor_eeprom[pdev->id].module_id = get_otp_vendor_module_id(e_ctrl, eb_info->eeprom_name);
-			strcpy(s_vendor_eeprom[pdev->id].eeprom_name, eb_info->eeprom_name);
+			strscpy(s_vendor_eeprom[pdev->id].eeprom_name, eb_info->eeprom_name,
+				sizeof(s_vendor_eeprom[pdev->id].eeprom_name));
 		}
 #endif
 
