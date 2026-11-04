@@ -16,7 +16,7 @@ config ZRAM
 
 choice
 	prompt "Default zram compressor"
-	default ZRAM_DEF_COMP_LZ4
+	default ZRAM_DEF_COMP_ZSTDN_O
 	depends on ZRAM
 
 config ZRAM_DEF_COMP_LZO
@@ -31,10 +31,20 @@ config ZRAM_DEF_COMP_LZ4
 	bool "lz4"
 	select CRYPTO_LZ4
 
+config ZRAM_DEF_COMP_ZSTDN
+	bool "zstdn"
+	select CRYPTO_ZSTDN
+
+config ZRAM_DEF_COMP_ZSTDN_O
+	bool "zstdn_o"
+	select CRYPTO_ZSTDN
+
 endchoice
 
 config ZRAM_DEF_COMP
 	string
+	default "zstdn_o" if ZRAM_DEF_COMP_ZSTDN_O
+	default "zstdn" if ZRAM_DEF_COMP_ZSTDN
 	default "lzo" if ZRAM_DEF_COMP_LZO
 	default "zstd" if ZRAM_DEF_COMP_ZSTD
 	default "lz4" if ZRAM_DEF_COMP_LZ4
