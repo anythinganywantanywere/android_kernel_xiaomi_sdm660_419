@@ -1860,16 +1860,6 @@ config CRYPTO_ZSTD
 	help
 	  This is the zstd algorithm.
 
-config CRYPTO_ZSTDN
-	tristate "ZSTD-N / ZSTD-N_O fast compression algorithm"
-	select CRYPTO_ALGAPI
-	select CRYPTO_ACOMP2
-	select ZSTD_COMPRESS
-	select ZSTD_DECOMPRESS
-	default y
-	help
-	  This is the zstdn / zstdn_o compression algorithm.
-
 comment "Random Number Generation"
 
 config CRYPTO_ANSI_CPRNG
