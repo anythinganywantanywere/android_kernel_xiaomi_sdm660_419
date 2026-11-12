@@ -330,10 +330,11 @@ source "fs/unicode/Kconfig"
 
 source "fs/nomount/Kconfig"
 
-# KernelSU SUSFS (v2.3.0, fs/susfs.c and its fs/ and kernel/ hooks are
+# KernelSU SUSFS (v2.4.0, fs/susfs.c and its fs/ and kernel/ hooks are
 # already in this tree). These symbols are defined here in the
 # superproject, not in the KernelSU submodule: backslashxx KernelSU
-# v3.3.1+36 contains no SUSFS symbols at all, so without these definitions
+# (v3.3.1+36 and later, incl. v3.3.1-47) contains no SUSFS symbols at
+# all, so without these definitions
 # olddefconfig would silently drop every CONFIG_KSU_SUSFS_* option from
 # whyred-perf_defconfig and the SUSFS code would not be compiled.
 # Defining them here keeps the KernelSU gitlink exactly at the upstream
@@ -381,6 +382,14 @@ config KSU_SUSFS_OPEN_REDIRECT
 config KSU_SUSFS_SUS_MAP
 	bool "SUSFS hide suspicious maps"
 	depends on KSU_SUSFS
+
+config KSU_SUSFS_PRIORITY_UID_FILTER
+	bool "SUSFS hide uids from getpriority/ioprio (priority uid filter)"
+	depends on KSU_SUSFS
+	help
+	  Hide the uids of apps that abuse the getpriority/ioprio
+	  syscalls to probe for existing uids. Only uids in the app
+	  range (10000-19999) are filtered. Off by default.
 
 config KSU_SUSFS_TRY_UMOUNT
 	bool "SUSFS try umount (deprecated, kept for defconfig compatibility)"
