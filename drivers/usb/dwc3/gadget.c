@@ -285,7 +285,9 @@ static void dwc3_gadget_del_and_unmap_request(struct dwc3_ep *dep,
 	struct dwc3			*dwc = dep->dwc;
 
 	req->started = false;
-	list_del(&req->list);
+	if (!list_empty(&req->list))
+		list_del_init(&req->list);
+
 	req->remaining = 0;
 	req->needs_extra_trb = false;
 	req->num_trbs = 0;
@@ -1097,6 +1099,11 @@ static struct usb_request *dwc3_gadget_ep_alloc_request(struct usb_ep *ep,
 	req = kzalloc(sizeof(*req), gfp_flags);
 	if (!req)
 		return NULL;
+	/*
+	 * req->list is not a head, but we are initialising it here,
+	 * so that we can delete it later during freeing the request.
+	 */
+	INIT_LIST_HEAD(&req->list);
 
 	req->direction	= dep->direction;
 	req->epnum	= dep->number;
@@ -1111,6 +1118,14 @@ static void dwc3_gadget_ep_free_request(struct usb_ep *ep,
 		struct usb_request *request)
 {
 	struct dwc3_request		*req = to_dwc3_request(request);
+	struct dwc3_ep			*dep = to_dwc3_ep(ep);
+	struct dwc3			*dwc = dep->dwc;
+
+	/* Remove the request from the list it was added to */
+	spin_lock(&dwc->lock);
+	if (!list_empty(&req->list))
+		list_del_init(&req->list);
+	spin_unlock(&dwc->lock);
 
 	trace_dwc3_free_request(req);
 	kfree(req);
