@@ -47,6 +47,7 @@ pub mod of;
 pub mod platform;
 pub mod prelude;
 pub mod print;
+pub mod pwm;
 pub mod regmap;
 pub mod regulator;
 pub mod sizes;
