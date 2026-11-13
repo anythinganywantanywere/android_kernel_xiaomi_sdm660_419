@@ -21,4 +21,150 @@ config SAMPLE_RUST_MINIMAL
 
 	  If unsure, say N.
 
+config SAMPLE_RUST_MISCDEV
+	tristate "Misc device"
+	help
+	  This option builds the Rust misc device sample, which proves
+	  the `file` / `miscdevice` abstractions: it registers
+	  /dev/rust_miscdev backed by a small per-file buffer.
+
+	  This kernel has no module support (CONFIG_MODULES is not set),
+	  so the sample is always built into the kernel when selected.
+
+	  If unsure, say N.
+
+config SAMPLE_RUST_PLATFORM
+	tristate "Platform driver"
+	help
+	  This option builds the Rust platform driver sample, which proves
+	  the `platform` abstraction: it registers a platform driver and
+	  a matching platform device (no device-tree change needed, the
+	  bus falls back to matching by name), and the driver's probe
+	  path owns /dev/rust_platform.
+
+	  This kernel has no module support (CONFIG_MODULES is not set),
+	  so the sample is always built into the kernel when selected.
+
+	  If unsure, say N.
+
+config SAMPLE_RUST_HWMON
+	tristate "Hardware monitor driver"
+	help
+	  This option builds the Rust hardware monitor driver: a
+	  platform driver plus misc device that reads hardware already
+	  proven accessible on this device (the GIC distributor TYPER,
+	  the xo clock rate, a GPIO input, and a regulator) and serves
+	  the live state as text on /dev/rust_hwmon. It is the Step 8
+	  pivot: the QRNG port (`rust_rng`) cannot run here because its
+	  registers fault with an SError even with the clock and bus
+	  voted, so this driver reads only the resources the Steps 2-7
+	  proof driver verified on-device.
+
+	  This kernel has no module support (CONFIG_MODULES is not set),
+	  so the sample is always built into the kernel when selected.
+
+	  If unsure, say N.
+
+config SAMPLE_RUST_GPIO_IRQ
+	tristate "GPIO IRQ counter driver"
+	help
+	  This option builds the Rust GPIO IRQ counter driver (Step 9,
+	  option 1): a platform driver plus misc device that requests
+	  the camera-focus key's real hardware interrupt line (shared
+	  with the C `gpio-keys` driver, which already holds it with
+	  `IRQF_SHARED`) and counts every time it fires, serving the
+	  count on /dev/rust_gpio_irq. It proves the `irq`
+	  abstraction against a real hardware line, not a virtual IRQ.
+
+	  This kernel has no module support (CONFIG_MODULES is not set),
+	  so the sample is always built into the kernel when selected.
+
+	  If unsure, say N.
+
+config SAMPLE_RUST_I2C
+	tristate "I2C probe driver"
+	help
+	  This option builds the Rust I2C probe driver (Step 9,
+	  option 2): a platform driver plus misc device that reads
+	  one register live from the Synaptics touchscreen on I2C bus
+	  1 and serves the value on /dev/rust_i2c. It is the first
+	  consumer of the new `kernel::i2c` abstraction. The read is
+	  read-only and serialised on the bus lock against the C
+	  touchscreen driver, so it cannot disturb the touchscreen.
+
+	  This kernel has no module support (CONFIG_MODULES is not set),
+	  so the sample is always built into the kernel when selected.
+
+	  If unsure, say N.
+
+config SAMPLE_RUST_THERMAL
+	tristate "Thermal sensor driver"
+	help
+	  This option builds the Rust thermal sensor driver (Step 10,
+	  option 1): a platform driver plus misc device that reads
+	  the SoC temperature straight from the tsens thermal monitor
+	  registers, the same way the C `tsens-v2` driver does, and
+	  serves it on /dev/rust_thermal. The read is read-only
+	  (`readl` on a status register), so it cannot disturb the C
+	  tsens driver; the value can be cross-checked against
+	  /sys/class/thermal/thermal_zone0/temp.
+
+	  This kernel has no module support (CONFIG_MODULES is not set),
+	  so the sample is always built into the kernel when selected.
+
+	  If unsure, say N.
+
+config SAMPLE_RUST_POWER
+	tristate "Power control driver"
+	help
+	  This option builds the Rust power control driver (Step 10,
+	  option 3): a platform driver plus misc device that lets
+	  userspace turn the pm660_l1 regulator on and off through
+	  /dev/rust_power (`echo "l1 on"` / `echo "l1 off"`). Safety
+	  comes from the regulator core's reference counting and
+	  from tracking what this driver turned on: it only ever
+	  disables a rail it enabled itself, so it can never turn
+	  the rail off while the system still holds a reference.
+
+	  This kernel has no module support (CONFIG_MODULES is not set),
+	  so the sample is always built into the kernel when selected.
+
+	  If unsure, say N.
+
+config SAMPLE_RUST_RTC
+	tristate "PMIC RTC reader driver"
+	help
+	  This option builds the Rust PMIC RTC reader (Step 11,
+	  option 3): an SPMI driver that binds to the PMIC RTC
+	  (`qcom,pm8941-rtc`) and reads the hardware clock through
+	  the PMIC regmap, serving the seconds since the epoch on
+	  /dev/rust_rtc. It is the first consumer of the new
+	  `kernel::regmap` abstraction. The read is read-only, so
+	  it cannot disturb the C RTC driver; the value can be
+	  cross-checked against `date +%s`.
+
+	  This kernel has no module support (CONFIG_MODULES is not set),
+	  so the sample is always built into the kernel when selected.
+
+	  If unsure, say N.
+
+config SAMPLE_RUST_BATTERY
+	tristate "PMIC ADC battery reader driver"
+	help
+	  This option builds the Rust PMIC ADC battery reader
+	  (Step 11, option 1): an SPMI driver that binds to the
+	  PMIC ADC (`qcom,spmi-adc-rev2`) and reads the battery
+	  voltage through the PMIC regmap, serving it on
+	  /dev/rust_battery. It is the first consumer of the new
+	  `kernel::spmi` abstraction. The conversion follows the
+	  C ADC driver's sequence (select the VBAT_SNS channel,
+	  enable, request, poll for EOC, read the result) and its
+	  scaling. The value can be cross-checked against
+	  /sys/class/power_supply/battery/voltage_now.
+
+	  This kernel has no module support (CONFIG_MODULES is not set),
+	  so the sample is always built into the kernel when selected.
+
+	  If unsure, say N.
+
 endif # SAMPLES_RUST
