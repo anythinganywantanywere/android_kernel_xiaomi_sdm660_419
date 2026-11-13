@@ -33,16 +33,30 @@ extern crate self as kernel;
 // they depend on APIs that do not exist in 4.19.
 pub mod alloc;
 mod build_assert;
+pub mod bus;
+pub mod clk;
 pub mod error;
+pub mod file;
+pub mod gpio;
+pub mod i2c;
 pub mod init;
+pub mod io;
+pub mod irq;
+pub mod miscdevice;
+pub mod of;
+pub mod platform;
 pub mod prelude;
 pub mod print;
+pub mod regmap;
+pub mod regulator;
 pub mod sizes;
+pub mod spmi;
 mod static_assert;
 #[doc(hidden)]
 pub mod std_vendor;
 pub mod str;
 pub mod sync;
+pub mod text;
 pub mod types;
 
 #[doc(hidden)]

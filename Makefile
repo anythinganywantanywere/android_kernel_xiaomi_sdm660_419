@@ -1255,6 +1255,11 @@ endif
 ifdef CONFIG_SAMPLES
 vmlinux-dirs += samples
 samples: headers_install
+# Built-in samples are compiled into samples/built-in.a, but
+# KBUILD_VMLINUX_OBJS does not list samples, so a built-in sample would
+# never be linked into vmlinux. Link the archive explicitly; with
+# CONFIG_MODULES unset this is the only way a sample can run.
+KBUILD_VMLINUX_OBJS += samples/built-in.a
 endif
 
 # The actual objects are generated when descending,
