@@ -332,65 +332,12 @@ source "fs/nomount/Kconfig"
 
 # KernelSU SUSFS (v2.4.0, fs/susfs.c and its fs/ and kernel/ hooks are
 # already in this tree). These symbols are defined here in the
-# superproject, not in the KernelSU submodule: backslashxx KernelSU
-# (v3.3.1+36 and later, incl. v3.3.1-47) contains no SUSFS symbols at
-# all, so without these definitions
-# olddefconfig would silently drop every CONFIG_KSU_SUSFS_* option from
-# whyred-perf_defconfig and the SUSFS code would not be compiled.
-# Defining them here keeps the KernelSU gitlink exactly at the upstream
-# tag, while the SUSFS configuration stays in the superproject commit.
-config KSU_SUSFS
-	bool "KernelSU SUSFS"
-	depends on KSU
-	help
-	  SUSFS (v2.3.0) hiding support for KernelSU: hide suspicious
-	  paths, mounts, kstat data, maps, and spoof uname/cmdline for
-	  non-KSU processes. Requires the KernelSU driver.
-
-config KSU_SUSFS_SUS_PATH
-	bool "SUSFS hide suspicious paths"
-	depends on KSU_SUSFS
-
-config KSU_SUSFS_SUS_MOUNT
-	bool "SUSFS hide suspicious mounts"
-	depends on KSU_SUSFS
-
-config KSU_SUSFS_SUS_KSTAT
-	bool "SUSFS spoof kstat for suspicious paths"
-	depends on KSU_SUSFS
-
-config KSU_SUSFS_SPOOF_UNAME
-	bool "SUSFS spoof uname"
-	depends on KSU_SUSFS
-
-config KSU_SUSFS_ENABLE_LOG
-	bool "SUSFS enable logging"
-	depends on KSU_SUSFS
-
-config KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS
-	bool "SUSFS hide KernelSU/SUSFS symbols from kallsyms"
-	depends on KSU_SUSFS
-
-config KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG
-	bool "SUSFS spoof cmdline or bootconfig"
-	depends on KSU_SUSFS
-
-config KSU_SUSFS_OPEN_REDIRECT
-	bool "SUSFS open redirect"
-	depends on KSU_SUSFS
-
-config KSU_SUSFS_SUS_MAP
-	bool "SUSFS hide suspicious maps"
-	depends on KSU_SUSFS
-
-config KSU_SUSFS_PRIORITY_UID_FILTER
-	bool "SUSFS hide uids from getpriority/ioprio (priority uid filter)"
-	depends on KSU_SUSFS
-	help
-	  Hide the uids of apps that abuse the getpriority/ioprio
-	  syscalls to probe for existing uids. Only uids in the app
-	  range (10000-19999) are filtered. Off by default.
-
+# The CONFIG_KSU_SUSFS_* options are defined by the KernelSU
+# submodule itself (manipvlator fork, which implements SUSFS
+# integration in kernel/Kconfig), so they must not be
+# redefined here -- a duplicate definition is a Kconfig error.
+# Only KSU_SUSFS_TRY_UMOUNT lives here, because the KernelSU
+# Kconfig does not define it.
 config KSU_SUSFS_TRY_UMOUNT
 	bool "SUSFS try umount (deprecated, kept for defconfig compatibility)"
 	depends on KSU_SUSFS
