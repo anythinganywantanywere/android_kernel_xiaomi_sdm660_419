@@ -167,4 +167,90 @@ config SAMPLE_RUST_BATTERY
 
 	  If unsure, say N.
 
+config SAMPLE_RUST_SPMI_PERIPH
+	tristate "PMIC SPMI peripheral reader driver"
+	help
+	  This option builds the Rust PMIC SPMI peripheral reader
+	  (Step 12): a platform driver that reads the PMIC GPIO
+	  controller (`qcom,spmi-gpio`, pins 0-3) and the
+	  temperature alarm (`qcom,spmi-temp-alarm`, stage and
+	  threshold) straight over SPMI through a direct handle to
+	  the PMIC, serving them on /dev/rust_spmi_periph. Both
+	  peripherals already have C drivers, so no Rust SPMI
+	  driver can bind to them; the direct handle bypasses
+	  binding. Every read is read-only.
+
+	  This kernel has no module support (CONFIG_MODULES is not set),
+	  so the sample is always built into the kernel when selected.
+
+	  If unsure, say N.
+
+config SAMPLE_RUST_PWM
+	tristate "PWM LPG reader driver"
+	help
+	  This option builds the Rust PWM LPG reader (Step 13):
+	  a platform driver that reads the display-backlight PWM
+	  duty and enable state from the PMIC LPG block
+	  (`qcom,pwms@b100`, channel 2) straight over SPMI
+	  through a direct handle to the PMIC, serving them on
+	  /dev/rust_pwm. The duty is a 9-bit value (0-511).
+	  Every read is read-only, so the brightness cannot
+	  change. The LPG already has a C driver, so the direct
+	  handle bypasses binding.
+
+	  This kernel has no module support (CONFIG_MODULES is not set),
+	  so the sample is always built into the kernel when selected.
+
+	  If unsure, say N.
+
+config SAMPLE_RUST_CHARGER
+	tristate "SMB1351 charger status reader driver"
+	help
+	  This option builds the Rust SMB1351 charger status
+	  reader (Step 14, part 1): a platform driver that reads
+	  the parallel charger's STATUS_4 register
+	  (`smb1351-charger@1d`, I2C bus 2) through the
+	  `kernel::i2c` abstraction, serving the hold-off /
+	  charging / done flags on /dev/rust_charger. Every read
+	  is read-only, so charging cannot be disturbed.
+
+	  This kernel has no module support (CONFIG_MODULES is not set),
+	  so the sample is always built into the kernel when selected.
+
+	  If unsure, say N.
+
+config SAMPLE_RUST_ADC_THERM
+	tristate "PMIC ADC thermistor reader driver"
+	help
+	  This option builds the Rust PMIC ADC thermistor reader
+	  (Step 15): a platform driver that reads the board
+	  thermistor channels (`xo_therm`, `msm_therm`,
+	  `emmc_therm`, `pa_therm0`) straight from the PMIC ADC
+	  through a direct SPMI handle, serving the raw code and
+	  the voltage on /dev/rust_adc_therm. The ADC already has
+	  a C driver, so the direct handle bypasses binding.
+	  Every read is read-only.
+
+	  This kernel has no module support (CONFIG_MODULES is not set),
+	  so the sample is always built into the kernel when selected.
+
+	  If unsure, say N.
+
+config SAMPLE_RUST_WDT
+	tristate "MSM watchdog status reader driver"
+	help
+	  This option builds the Rust MSM watchdog status reader
+	  (Step 16): a platform driver that reads the watchdog's
+	  enable state, status and bark/bite timeouts straight
+	  from its registers (`qcom,wdt@17817000`) through
+	  `IoMem`, serving them on /dev/rust_wdt. Every read is
+	  a plain `readl`: reading never pets the watchdog and
+	  never changes its configuration. The watchdog already
+	  has a C driver; this driver only observes it.
+
+	  This kernel has no module support (CONFIG_MODULES is not set),
+	  so the sample is always built into the kernel when selected.
+
+	  If unsure, say N.
+
 endif # SAMPLES_RUST

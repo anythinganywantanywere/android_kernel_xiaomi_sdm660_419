@@ -8,7 +8,12 @@
 //!
 //! ```text
 //! rtc_secs=1763012345
+//! alarm_secs=0
 //! ```
+//!
+//! The second line is the RTC alarm time, read from the
+//! alarm register (`regs->alarm_rw = 0x6140`); it is 0 when
+//! no alarm is set. The alarm is only read, never set.
 //!
 //! The RTC is an SPMI slave of the PMIC, and its C driver
 //! (`rtc-pm8xxx.c`) reads it through the PMIC regmap. A Rust
@@ -50,6 +55,9 @@ module! {
 /// `0x6048`. (The `0x123` value is `pm8921_regs.read`, for the
 /// older PM8921 -- reading it on this PMIC returns 0.)
 const RTC_READ_REG: u16 = 0x6048;
+/// The RTC alarm read register (`pm8941_regs.alarm_rw`).
+/// Same 4-byte little-endian seconds format as the time.
+const RTC_ALARM_REG: u16 = 0x6140;
 /// The time is four bytes, little-endian, seconds since epoch.
 const RTC_TIME_LEN: usize = 4;
 
@@ -61,8 +69,8 @@ struct Shared {
 
 impl Shared {
     /// Read the RTC time (seconds since epoch) and render it.
-    fn snapshot(&self) -> [u8; 32] {
-        let mut buf = [0u8; 32];
+    fn snapshot(&self) -> [u8; 64] {
+        let mut buf = [0u8; 64];
         let mut len = 0usize;
         let mut time_bytes = [0u8; RTC_TIME_LEN];
         let secs = match self.sdev.read_ext(RTC_READ_REG, &mut time_bytes) {
@@ -72,11 +80,21 @@ impl Shared {
         len += copy_bytes(&mut buf[len..], b"rtc_secs=");
         len += write_u32_dec(&mut buf[len..], secs);
         len += copy_bytes(&mut buf[len..], b"\n");
+        // The alarm time, same format. Read-only; 0 when no
+        // alarm is set.
+        let mut alarm_bytes = [0u8; RTC_TIME_LEN];
+        let alarm = match self.sdev.read_ext(RTC_ALARM_REG, &mut alarm_bytes) {
+            Ok(()) => u32::from_le_bytes(alarm_bytes),
+            Err(_) => 0,
+        };
+        len += copy_bytes(&mut buf[len..], b"alarm_secs=");
+        len += write_u32_dec(&mut buf[len..], alarm);
+        len += copy_bytes(&mut buf[len..], b"\n");
         buf
     }
 
     /// The length of the snapshot text (up to the first NUL).
-    fn snapshot_len(buf: &[u8; 32]) -> usize {
+    fn snapshot_len(buf: &[u8; 64]) -> usize {
         buf.iter().position(|&b| b == 0).unwrap_or(buf.len())
     }
 }
