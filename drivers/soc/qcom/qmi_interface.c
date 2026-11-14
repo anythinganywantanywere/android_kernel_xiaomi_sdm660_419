@@ -312,6 +312,7 @@ int qmi_txn_init(struct qmi_handle *qmi, struct qmi_txn *txn,
 
 	memset(txn, 0, sizeof(*txn));
 
+	mutex_init(&txn->lock);
 	init_completion(&txn->completion);
 	txn->qmi = qmi;
 	txn->ei = ei;
@@ -347,12 +348,10 @@ int qmi_txn_wait(struct qmi_txn *txn, unsigned long timeout)
 
 	ret = wait_for_completion_timeout(&txn->completion, timeout);
 
-	if (txn->result == -ENETRESET) {
-		return txn->result;
-	}
-
 	mutex_lock(&qmi->txn_lock);
+	mutex_lock(&txn->lock);
 	idr_remove(&qmi->txns, txn->id);
+	mutex_unlock(&txn->lock);
 	mutex_unlock(&qmi->txn_lock);
 
 	if (ret == 0)
@@ -371,7 +370,9 @@ void qmi_txn_cancel(struct qmi_txn *txn)
 	struct qmi_handle *qmi = txn->qmi;
 
 	mutex_lock(&qmi->txn_lock);
+	mutex_lock(&txn->lock);
 	idr_remove(&qmi->txns, txn->id);
+	mutex_unlock(&txn->lock);
 	mutex_unlock(&qmi->txn_lock);
 }
 EXPORT_SYMBOL(qmi_txn_cancel);
@@ -447,11 +448,6 @@ static void qmi_handle_net_reset(struct qmi_handle *qmi)
 	if (IS_ERR(sock))
 		return;
 
-	qmi_recv_del_server(qmi, -1, -1);
-
-	if (qmi->ops.net_reset)
-		qmi->ops.net_reset(qmi);
-
 	mutex_lock(&qmi->sock_lock);
 	/* Already qmi_handle_release() started */
 	if (!qmi->sock) {
@@ -460,6 +456,15 @@ static void qmi_handle_net_reset(struct qmi_handle *qmi)
 		return;
 	}
 	sock_release(qmi->sock);
+	qmi->sock = NULL;
+	mutex_unlock(&qmi->sock_lock);
+
+	qmi_recv_del_server(qmi, -1, -1);
+
+	if (qmi->ops.net_reset)
+		qmi->ops.net_reset(qmi);
+
+	mutex_lock(&qmi->sock_lock);
 	qmi->sock = sock;
 	qmi->sq = sq;
 	qmi->sock->sk->sk_sndtimeo = timeo;
@@ -501,6 +506,10 @@ static void qmi_handle_message(struct qmi_handle *qmi,
 			mutex_unlock(&qmi->txn_lock);
 			return;
 		}
+
+		mutex_lock(&txn->lock);
+		mutex_unlock(&qmi->txn_lock);
+
 		if (txn->dest && txn->ei) {
 			ret = qmi_decode_message(buf, len, txn->ei, txn->dest);
 			if (ret < 0)
@@ -511,7 +520,8 @@ static void qmi_handle_message(struct qmi_handle *qmi,
 		} else {
 			qmi_invoke_handler(qmi, sq, txn, buf, len);
 		}
-		mutex_unlock(&qmi->txn_lock);
+
+		mutex_unlock(&txn->lock);
 	} else {
 		/* Create a txn based on the txn_id of the incoming message */
 		memset(&tmp_txn, 0, sizeof(tmp_txn));

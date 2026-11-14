@@ -58,6 +58,17 @@ static noinline int check_stack_object(const void *obj, unsigned long len)
 	if (ret)
 		return ret;
 
+	/* Finally, check stack depth if possible. */
+#ifdef CONFIG_ARCH_HAS_CURRENT_STACK_POINTER
+	if (IS_ENABLED(CONFIG_STACK_GROWSUP)) {
+		if ((void *)current_stack_pointer < obj + len)
+			return BAD_STACK;
+	} else {
+		if (obj < (void *)current_stack_pointer)
+			return BAD_STACK;
+	}
+#endif
+
 	return GOOD_STACK;
 }
 

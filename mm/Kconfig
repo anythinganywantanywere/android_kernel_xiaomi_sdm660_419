@@ -841,6 +841,15 @@ config GUP_BENCHMARK
 config ARCH_HAS_PTE_SPECIAL
 	bool
 
+config ARCH_HAS_CURRENT_STACK_POINTER
+	bool
+	help
+	  In support of HARDENED_USERCOPY performing stack variable lifetime
+	  checking, an architecture-agnostic way to find the stack pointer
+	  is needed. Once an architecture defines an unsigned long global
+	  register alias named "current_stack_pointer", this config can be
+	  selected.
+
 # multi-gen LRU {
 config LRU_GEN
 	bool "Multi-Gen LRU"
