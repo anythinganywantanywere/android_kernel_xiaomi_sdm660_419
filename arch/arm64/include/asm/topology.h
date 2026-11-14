@@ -49,6 +49,9 @@ int pcibus_to_node(struct pci_bus *bus);
 /* Replace task scheduler's default frequency-invariant accounting */
 #define arch_scale_freq_capacity topology_get_freq_scale
 
+/* Reference frequency used to correlate frequency and compute capacity */
+#define arch_scale_freq_ref topology_get_freq_ref
+
 /* Replace task scheduler's default max-frequency-invariant accounting */
 #define arch_scale_max_freq_capacity topology_get_max_freq_scale
 
