@@ -425,7 +425,7 @@ __attribute__((hot)) bool susfs_is_inode_sus_path(struct inode *inode)
 			return false;
 		}
 
-		if (unlikely(test_bit(AS_FLAGS_SUS_PATH, &fi->inode.i_mapping->flags) &&
+		if (unlikely(test_bit(AS_FLAGS_SUS_PATH, &fi->inode.i_state) &&
 			likely(!susfs_is_uid_allowed_for_sus_path(uid))))
 		{
 			//SUSFS_LOGI("hiding path with ino '%lu'\n", inode->i_ino);
@@ -434,7 +434,7 @@ __attribute__((hot)) bool susfs_is_inode_sus_path(struct inode *inode)
 		return false;
 	}
 
-	if (unlikely(test_bit(AS_FLAGS_SUS_PATH, &inode->i_mapping->flags) &&
+	if (unlikely(test_bit(AS_FLAGS_SUS_PATH, &inode->i_state) &&
 		likely(!susfs_is_uid_allowed_for_sus_path(uid))))
 	{
 		//SUSFS_LOGI("hiding path with ino '%lu'\n", inode->i_ino);
@@ -745,7 +745,8 @@ void susfs_set_sus_path_uid_filter(void __user **user_info) {
 		is_uid_filter_set_before = true;
 	mutex_unlock(&susfs_mutex_lock_sus_path_uid_filter);
 	synchronize_rcu();
-	kfree_rcu(old_bitmap, rcu);
+	if (old_bitmap)
+		kfree_rcu(old_bitmap, rcu);
 
 	SUSFS_LOGI("the sus path uid filter is set\n");
 	err = 0;
@@ -823,7 +824,8 @@ static int susfs_sus_path_app_strings_worker(void *data) {
 	new_bitmap = NULL;
 	mutex_unlock(&susfs_mutex_lock_sus_path_uid_filter);
 	synchronize_rcu();
-	kfree_rcu(old_bitmap, rcu);
+	if (old_bitmap)
+		kfree_rcu(old_bitmap, rcu);
 
 	SUSFS_LOGI("the uids of the sus path uid filter are resolved again\n");
 
